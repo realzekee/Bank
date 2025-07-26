@@ -1,0 +1,11 @@
+[
+  {
+    "id": "admin",
+    "username": "Zeke",
+    "password": "$2a$10$adminhashplaceholder",
+    "role": "admin",
+    "locked": false,
+    "balance": 1000000,
+    "createdAt": "2025-07-26T00:00:00Z"
+  }
+]
