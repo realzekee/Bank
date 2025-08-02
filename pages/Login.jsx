@@ -1,39 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { hashPassword, comparePassword, getUsers } from '../utils/auth.js';
+import { useAuth } from '../lib/middleware.js';
+import LoginForm from '../components/Auth/LoginForm.jsx';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { user, login } = useAuth();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const users = await getUsers();
-    const user = users.find(u => u.username === username);
-    if (!user) return setError('User not found');
-    if (user.locked) return setError('Account locked');
-    if (!comparePassword(password, user.password)) return setError('Invalid password');
-    localStorage.setItem('session', JSON.stringify({ username: user.username, role: user.role }));
-    window.location.href = user.role === 'admin' ? '/admin' : '/dashboard';
+  // Redirect if already logged in
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleLogin = (userData) => {
+    login(userData);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <motion.form
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="bg-glass p-8 rounded-xl shadow-neon w-96"
-        onSubmit={handleLogin}
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
       >
-        <h2 className="text-3xl font-cyber text-neonPurple mb-6">Login</h2>
-        <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="w-full mb-4 px-4 py-2 rounded bg-black text-white border-b-2 border-neonTeal focus:outline-none" />
-        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full mb-4 px-4 py-2 rounded bg-black text-white border-b-2 border-neonPink focus:outline-none" />
-        {error && <div className="text-neonPink mb-2">{error}</div>}
-        <button type="submit" className="w-full py-3 bg-neonPurple rounded-full font-bold text-white shadow-neon hover:bg-neonTeal transition">Login</button>
-        <a href="/register" className="block mt-4 text-neonTeal hover:underline">Register</a>
-      </motion.form>
+        <LoginForm onLogin={handleLogin} />
+      </motion.div>
     </div>
   );
 }
