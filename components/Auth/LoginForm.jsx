@@ -1,72 +1,113 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { comparePassword, getUsers } from '../../utils/auth.js';
+import { loginUser } from '../../lib/auth.js';
+import Button from '../Button.jsx';
 
 export default function LoginForm({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    emailOrUsername: '',
+    password: ''
+  });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    if (error) setError('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
-      const users = await getUsers();
-      const user = users.find(u => u.username === username);
-      if (!user) {
-        setError('User not found');
-        return;
-      }
-      if (user.locked) {
-        setError('Account locked');
-        return;
-      }
-      if (!comparePassword(password, user.password)) {
-        setError('Invalid password');
-        return;
-      }
+      const user = await loginUser(formData.emailOrUsername, formData.password);
       onLogin(user);
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <motion.form
+    <motion.div
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1 }}
-      className="bg-glass p-8 rounded-xl shadow-neon w-96"
-      onSubmit={handleLogin}
-      aria-labelledby="login-form-title"
+      transition={{ duration: 0.8 }}
+      className="bg-black/40 backdrop-blur-lg p-8 rounded-xl border border-neonPurple/30 shadow-2xl shadow-neonPurple/20 w-full max-w-md"
     >
-      <h2 id="login-form-title" className="text-3xl font-cyber text-neonPurple mb-6">Login</h2>
-      <label htmlFor="username" className="sr-only">Username</label>
-      <input
-        id="username"
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={e => setUsername(e.target.value)}
-        className="w-full mb-4 px-4 py-2 rounded bg-black text-white border-b-2 border-neonTeal focus:outline-none"
-        required
-      />
-      <label htmlFor="password" className="sr-only">Password</label>
-      <input
-        id="password"
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        className="w-full mb-4 px-4 py-2 rounded bg-black text-white border-b-2 border-neonPink focus:outline-none"
-        required
-      />
-      {error && <div className="text-neonPink mb-2" role="alert">{error}</div>}
-      <button
-        type="submit"
-        className="w-full py-3 bg-neonPurple rounded-full font-bold text-white shadow-neon hover:bg-neonTeal transition"
-      >
-        Login
-      </button>
-    </motion.form>
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-cyber text-neonPurple mb-2">Access Terminal</h2>
+        <p className="text-gray-400 font-cyber">Enter your credentials to continue</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="emailOrUsername" className="block text-sm font-cyber text-gray-300 mb-2">
+            Username or Email
+          </label>
+          <input
+            id="emailOrUsername"
+            name="emailOrUsername"
+            type="text"
+            required
+            value={formData.emailOrUsername}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-black/50 border border-neonTeal/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-neonTeal focus:ring-1 focus:ring-neonTeal transition-colors duration-300 font-cyber"
+            placeholder="Enter username or email"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-cyber text-gray-300 mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full px-4 py-3 bg-black/50 border border-neonPink/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-neonPink focus:ring-1 focus:ring-neonPink transition-colors duration-300 font-cyber"
+            placeholder="Enter password"
+          />
+        </div>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-red-900/30 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg font-cyber text-sm"
+            role="alert"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        <Button
+          type="submit"
+          loading={loading}
+          className="w-full"
+          size="lg"
+        >
+          {loading ? 'Authenticating...' : 'Login'}
+        </Button>
+      </form>
+
+      <div className="mt-6 text-center">
+        <p className="text-gray-400 font-cyber text-sm">
+          Don't have an account?{' '}
+          <a href="/register" className="text-neonTeal hover:text-neonPurple transition-colors duration-300">
+            Register here
+          </a>
+        </p>
+      </div>
+    </motion.div>
   );
 }
