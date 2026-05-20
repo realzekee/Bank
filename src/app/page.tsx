@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      <PageHeader title="Dashboard" description="Your financial command center." />
+      <PageHeader title="Dashboard" description="ZynPay — Your financial command center." />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 grid gap-6">
             <Card>

@@ -59,7 +59,11 @@ export default function LoginPage() {
   return (
     <div className="flex items-center min-h-screen p-4">
         <Card className="w-full max-w-sm mx-auto">
-        <CardHeader>
+        <CardHeader className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Logo className="h-5 w-5 text-primary" />
+            <span>ZynPay</span>
+          </div>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>Enter your email below to login to your account</CardDescription>
         </CardHeader>
